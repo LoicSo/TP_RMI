@@ -5,11 +5,10 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Participant extends UnicastRemoteObject implements IParticipant {
 
-	static int counter = 0;
 	String name;
 	
-	public Participant() throws RemoteException{
-		name = "participant" + counter++;
+	public Participant(String name) throws RemoteException{
+		this.name = name;
 	}
 	
 	@Override
@@ -19,8 +18,7 @@ public class Participant extends UnicastRemoteObject implements IParticipant {
 
 	@Override
 	public void receive(String name, String msg) {
-		// TODO Auto-generated method stub
-		
+		System.out.println(name + " : " + msg);
 	}
 
 }
