@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Participant extends UnicastRemoteObject implements IParticipant {
 
+	private static final long serialVersionUID = -7186187182104106848L;
 	String name;
 	
 	public Participant(String name) throws RemoteException{

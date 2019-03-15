@@ -27,4 +27,8 @@ public class TerminatedThread extends Thread {
 		}
 	}
 
+	public void changeRoom(IChatRoom stub) {
+		this.stub = stub;
+	}
+
 }

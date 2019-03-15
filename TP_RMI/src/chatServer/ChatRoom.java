@@ -1,6 +1,5 @@
 package chatServer;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -11,74 +10,76 @@ import java.util.List;
 
 public class ChatRoom extends UnicastRemoteObject implements IChatRoom {
 
+	private static final long serialVersionUID = -3505617332668629540L;
 	static int counter = 0;
 	String name;
 	List<IParticipant> room;
 	Registry reg;
-	
-	public ChatRoom() throws RemoteException{
+
+	public ChatRoom() throws RemoteException {
 		name = "chatRoom" + counter++;
 		room = new ArrayList<IParticipant>();
 		reg = LocateRegistry.getRegistry(1099);
 	}
-	
+
 	@Override
 	public String name() {
 		return name;
 	}
 
 	@Override
-	public void connect(IParticipant p) {
-		
-		IParticipant stub = null;
-		try {
-			stub = (IParticipant) reg.lookup(p.name());
-		} catch (RemoteException e) {
-			System.err.println("ChatRoom exception" + e.toString());
-			e.printStackTrace();
-		} catch (NotBoundException e) {
-			System.err.println("Participant does not exist");
-			e.printStackTrace();
+	public void connect(IParticipant p) throws RemoteException {
+		if (p != null) {
+			room.add(p);
+			send(null, p.name() + " enter the room");
 		}
-		room.add(stub);
 	}
 
 	@Override
-	public void leave(IParticipant p) {
-		
-		IParticipant stub = null;
-		try {
-			stub = (IParticipant) reg.lookup(p.name());
-		} catch (RemoteException e) {
-			System.err.println("ChatRoom exception" + e.toString());
-			e.printStackTrace();
-		} catch (NotBoundException e) {
-			System.err.println("Participant does not exist");
-			e.printStackTrace();
+	public void leave(IParticipant p) throws RemoteException {
+		if (room.contains(p)) {
+			send(null, p.name() + " leave the room");
+			room.remove(p);
 		}
-		room.remove(stub);		
 	}
 
 	@Override
-	public String[] who() {
-		return room.toArray(new String[0]);
+	public String[] who() throws RemoteException {
+
+		String[] listP = new String[room.size()];
+		int i = 0;
+
+		Iterator<IParticipant> iter = room.iterator();
+		while (iter.hasNext()) {
+			IParticipant participant = iter.next();
+			listP[i++] = participant.name();
+		}
+
+		return listP;
 	}
 
 	@Override
 	public synchronized void send(IParticipant p, String msg) throws RemoteException {
-		
-		if(room.contains(p)) {
+
+		if (p != null) {
+			if (room.contains(p)) {
+				Iterator<IParticipant> iter = room.iterator();
+				while (iter.hasNext()) {
+					IParticipant participant = iter.next();
+					if (!participant.equals(p))
+						participant.receive(p.name(), msg);
+				}
+			} else {
+				p.receive(name, "You are not connected to this chatRoom.");
+			}
+		} else {
 			Iterator<IParticipant> iter = room.iterator();
-			while(iter.hasNext()) {
+			while (iter.hasNext()) {
 				IParticipant participant = iter.next();
-				participant.receive(p.name(), msg);
+				participant.receive(name, msg);
 			}
 		}
-		else {
-			p.receive(name, "You are not connected to this chatRoom.");
-		}
-		
-		
+
 	}
 
 }

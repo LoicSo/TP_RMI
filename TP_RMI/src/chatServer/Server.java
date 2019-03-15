@@ -14,6 +14,7 @@ public class Server {
 		} catch (RemoteException e) {
 			System.err.println("ChatRoom creation failed");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 	
@@ -29,6 +30,7 @@ public class Server {
 		} catch (Exception e) {
 			System.err.println("Server exception: " + e.toString());
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 
