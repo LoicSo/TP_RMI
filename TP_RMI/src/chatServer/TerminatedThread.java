@@ -13,8 +13,7 @@ public class TerminatedThread extends Thread {
 	public TerminatedThread(IParticipant participant, IChatRoom stub, Registry reg) {
 		this.participant = participant;
 		this.stub = stub;
-		this.reg = reg;
-				
+		this.reg = reg;	
 	}
 	
 	public void run() {

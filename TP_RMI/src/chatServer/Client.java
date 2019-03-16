@@ -1,6 +1,5 @@
 package chatServer;
 
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -20,32 +19,24 @@ public class Client {
 
 	private void run() {
 
-		String nameChat = null;
 		IChatRoom stub = null;
+
 		try {
 			System.out.println("What is your Participant name?");
 			String namePart = sc.nextLine();
 			participant = new Participant(namePart);
 
 			reg = LocateRegistry.getRegistry(1099);
-			reg.bind(participant.name(), participant);
 
-			System.out.println("To which ChatRoom do you want to connect? (chatRoom + nb)");
-			nameChat = sc.nextLine();
-
-			stub = connect(nameChat);
+			stub = connect();
+			System.out.println("Connected to " + stub.name());
 
 		} catch (RemoteException e) {
 			System.err.println("Client exception: " + e.toString());
 			e.printStackTrace();
 			System.exit(-1);
 
-		} catch (AlreadyBoundException e) {
-			System.err.println("Participant created twice");
-			System.exit(-1);
 		}
-
-		System.out.println("Connected to " + nameChat);
 
 		t = new TerminatedThread(participant, stub, reg);
 		Runtime.getRuntime().addShutdownHook(t);
@@ -61,57 +52,91 @@ public class Client {
 				msg = sc.nextLine();
 
 				if (stub != null) {
-					if (msg.compareTo("who") == 0) {
-						String[] listP = stub.who();
-						for (int i = 0; i < listP.length; i++) {
-							System.out.println(listP[i]);
-						}
-					} else if (msg.compareTo("leave") == 0) {
-						stub.leave(participant);
+					switch (msg) {
+					case "who":
+						print_participant(stub);
+						break;
+					case "leave":
+						leave_room(stub);
 						stub = null;
-					} else if (msg.compareTo("connect") == 0) {
+						break;
+					case "connect":
 						System.out.println("You must leave your current room before connect to an other");
-					} else {
+						break;
+					default:
 						stub.send(participant, msg);
+						break;
 					}
 				} else {
-					if (msg.compareTo("connect") == 0) {
-						System.out.println("To which ChatRoom do you want to connect? (chatRoom + nb)");
-						String nameChat = sc.nextLine();
-
-						stub = connect(nameChat);
-					} else {
+					switch (msg) {
+					case "connect":
+						stub = connect();
+						break;
+					default:
 						System.out.println("You must be connected to room for chatting");
+						break;
 					}
 				}
 
 			} catch (RemoteException e) {
 				System.err.println("Client exception: " + e.toString());
 				e.printStackTrace();
+				System.exit(-1);
+
 			}
 		}
 	}
 
-	private IChatRoom connect(String nameChat) {
+	private void leave_room(IChatRoom stub) throws RemoteException {
+		stub.leave(participant);
+	}
+
+	private void print_participant(IChatRoom stub) throws RemoteException {
+		String[] listP = stub.who();
+		for (int i = 0; i < listP.length; i++) {
+			System.out.println(listP[i]);
+		}
+	}
+
+	private IChatRoom connect() {
+
+		boolean roomCorr = false;
 		IChatRoom stub = null;
-		try {
-			stub = (IChatRoom) reg.lookup(nameChat);
-			stub.connect(participant);
 
-			if (t != null)
-				t.changeRoom(stub);
+		while (!roomCorr) {
+			System.out.println("To which ChatRoom do you want to connect? \n Type 'list' to obtain the list of room's name");
+			String nameChat = sc.nextLine();
 
-		} catch (RemoteException e) {
-			System.err.println("Client exception: " + e.toString());
-			e.printStackTrace();
-			System.exit(-1);
+			try {
+				if (nameChat.equals("list")) {
+					print_room();
+				} else {
+					stub = (IChatRoom) reg.lookup(nameChat);
+					stub.connect(participant);
 
-		} catch (NotBoundException e) {
-			System.err.println("This chatRoom does not exist");
-			System.exit(-1);
+					if (t != null)
+						t.changeRoom(stub);
+
+					roomCorr = true;
+				}
+			} catch (RemoteException e) {
+				System.err.println("Client exception: " + e.toString());
+				e.printStackTrace();
+				System.exit(-1);
+			} catch (NotBoundException e) {
+				System.err.println("This room does not exist");
+			}
 		}
 
 		return stub;
+
+	}
+
+	private void print_room() throws RemoteException {
+		String[] roomList = reg.list();
+		for (int i = 0; i < roomList.length; i++) {
+			System.out.println(roomList[i]);
+		}
 	}
 
 	public static void main(String[] args) {

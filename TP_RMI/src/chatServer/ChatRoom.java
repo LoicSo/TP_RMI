@@ -11,13 +11,12 @@ import java.util.List;
 public class ChatRoom extends UnicastRemoteObject implements IChatRoom {
 
 	private static final long serialVersionUID = -3505617332668629540L;
-	static int counter = 0;
 	String name;
 	List<IParticipant> room;
 	Registry reg;
 
-	public ChatRoom() throws RemoteException {
-		name = "chatRoom" + counter++;
+	public ChatRoom(String name) throws RemoteException {
+		this.name = name;
 		room = new ArrayList<IParticipant>();
 		reg = LocateRegistry.getRegistry(1099);
 	}
