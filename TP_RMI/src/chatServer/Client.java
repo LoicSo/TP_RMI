@@ -38,7 +38,7 @@ public class Client {
 
 		}
 
-		t = new TerminatedThread(participant, stub, reg);
+		t = new TerminatedThread(participant, stub);
 		Runtime.getRuntime().addShutdownHook(t);
 
 		chat(stub);
