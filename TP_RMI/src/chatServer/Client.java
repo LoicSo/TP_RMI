@@ -17,7 +17,7 @@ public class Client {
 		sc = new Scanner(System.in);
 	}
 
-	private void run() {
+	private void run(String[] args) {
 
 		IChatRoom stub = null;
 
@@ -26,7 +26,7 @@ public class Client {
 			String namePart = sc.nextLine();
 			participant = new Participant(namePart);
 
-			reg = LocateRegistry.getRegistry(1099);
+			reg = LocateRegistry.getRegistry(args[0],1099);
 
 			stub = connect();
 			System.out.println("Connected to " + stub.name());
@@ -141,7 +141,7 @@ public class Client {
 
 	public static void main(String[] args) {
 		Client client = new Client();
-		client.run();
+		client.run(args);
 	}
 
 }
