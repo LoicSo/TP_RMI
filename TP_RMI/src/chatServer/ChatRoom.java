@@ -81,4 +81,13 @@ public class ChatRoom extends UnicastRemoteObject implements IChatRoom {
 
 	}
 
+	@Override
+	public void forcedDisconnection() throws RemoteException {
+		for (Iterator<IParticipant> iterator = room.iterator(); iterator.hasNext();) {
+			IParticipant iParticipant = (IParticipant) iterator.next();
+			iParticipant.forcedDisconnection();
+		}
+		
+	}
+
 }

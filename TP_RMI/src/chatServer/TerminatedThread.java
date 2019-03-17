@@ -11,13 +11,16 @@ public class TerminatedThread extends Thread {
 		this.participant = participant;
 		this.stub = stub;
 	}
-	
+
 	public void run() {
-		try {
-			stub.leave(participant);
-		} catch (RemoteException e) {
-			System.err.println("Client exception: " + e.toString());
-			e.printStackTrace();
+		if (stub != null) {
+			try {
+				stub.leave(participant);
+			} catch (RemoteException e) {
+				System.err.println("Client exception: " + e.toString());
+				e.printStackTrace();
+				System.exit(-1);
+			}
 		}
 	}
 
